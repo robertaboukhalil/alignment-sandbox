@@ -9,18 +9,8 @@ import Parameter from "./Parameter.svelte";
 // -----------------------------------------------------------------------------
 
 // User input
-let seq1 = "ACGTGCCCCACAGAT";
-let seq2 = "AGGTGGACGAGAT";
-let result = {
-	sw: "Loading...",
-	nw: "Loading..."
-};
-
-// Aioli setup
-let ready = false;
-let smith_waterman = new Aioli("seq-align/smith_waterman/2017.10.18");
-let needleman_wunsch = new Aioli("seq-align/needleman_wunsch/2017.10.18");
-
+let Seq1 = "ACGTGCCCCACAGAT";
+let Seq2 = "AGGTGGACGAGAT";
 let Params = [];
 let Options = {
 	// Scoring
@@ -30,6 +20,17 @@ let Options = {
 	gapextend: -1,
 	// General
 	case_sensitive: false,
+};
+// Aioli/WebAssembly setup
+let CLI = {
+	ready: false,
+	sw: new Aioli("seq-align/smith_waterman/2017.10.18"),
+	nw: new Aioli("seq-align/needleman_wunsch/2017.10.18")
+}
+// Output
+let Result = {
+	sw: "Loading...",
+	nw: "Loading..."
 };
 
 
@@ -49,18 +50,18 @@ $: Params = Object.keys(Options).map(arg => {
 
 // Run alignment when user input changes
 $: {
-	if(ready)
+	if(CLI.ready)
 	{
 		// --printmatrices
-		smith_waterman.exec(`${Params} ${seq1} ${seq2}`).then(d =>
+		CLI.sw.exec(`${Params} ${Seq1} ${Seq2}`).then(d =>
 		{
-			result.sw = cleanOutput(d.stdout);
+			Result.sw = cleanOutput(d.stdout);
 			if(d.stderr != "")
 				console.warn(d.stderr);
 		});
 
-		needleman_wunsch.exec(`--printscores ${Params} ${seq1} ${seq2}`).then(d => {
-			result.nw = cleanOutput(d.stdout);
+		CLI.nw.exec(`--printscores ${Params} ${Seq1} ${Seq2}`).then(d => {
+			Result.nw = cleanOutput(d.stdout);
 			if(d.stderr != "")
 				console.warn(d.stderr);
 		});
@@ -88,9 +89,9 @@ function cleanOutput(output)
 onMount(async () => {
 	// Initialize wasm tools
 	Promise.all([
-		smith_waterman.init(),
-		needleman_wunsch.init()
-	]).then(() => ready = true);
+		CLI.sw.init(),
+		CLI.nw.init()
+	]).then(() => CLI.ready = true);
 
 	// Enable jQuery tooltips
 	jQuery("[data-toggle='popover']").popover();
@@ -126,8 +127,8 @@ onMount(async () => {
 			<p class="mb-2">Sequences to align:</p>
 			<div class="row">
 				<div class="col-12">
-					<input type="text" bind:value={seq1} disabled={!ready} class="sequences form-control mb-1" style="font-family: monospace">
-					<input type="text" bind:value={seq2} disabled={!ready} class="sequences form-control" style="font-family: monospace">
+					<input type="text" bind:value={Seq1} disabled={!CLI.ready} class="sequences form-control mb-1" style="font-family: monospace">
+					<input type="text" bind:value={Seq2} disabled={!CLI.ready} class="sequences form-control" style="font-family: monospace">
 				</div>
 			</div>
 		</div>
@@ -156,7 +157,7 @@ onMount(async () => {
 			<div class="col-md-4">
 				<h4 class="mb-3">Smith-Waterman</h4>
 				<pre>
-				{result.sw}
+				{Result.sw}
 				</pre>
 			</div>
 
@@ -164,7 +165,7 @@ onMount(async () => {
 			<div class="col-md-4">
 				<h4 class="mb-3">Needleman-Wunsch</h4>
 				<pre>
-				{result.nw}
+				{Result.nw}
 				</pre>
 			</div>
 		</div>
