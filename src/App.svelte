@@ -20,6 +20,7 @@ let Options = {
 	gapextend: -1,
 	// General
 	case_sensitive: false,
+	scoring: null
 };
 // Aioli/WebAssembly setup
 let CLI = {
@@ -46,7 +47,7 @@ $: Params = Object.keys(Options).map(arg => {
 	if(typeof value === "boolean")
 		return value === true ? `--${arg}` : "";
 	return `--${arg} ${value}`;
-}).join(" ").trim();
+}).filter(d => d != "").join(" ").trim();
 
 // Run alignment when user input changes
 $: {
@@ -57,13 +58,13 @@ $: {
 		{
 			Result.sw = cleanOutput(d.stdout);
 			if(d.stderr != "")
-				console.warn(d.stderr);
+				Result.sw = d.stderr;
 		});
 
 		CLI.nw.exec(`--printscores ${Params} ${Seq1} ${Seq2}`).then(d => {
 			Result.nw = cleanOutput(d.stdout);
 			if(d.stderr != "")
-				console.warn(d.stderr);
+				Result.nw = d.stderr;
 		});
 	}
 }
@@ -72,8 +73,7 @@ $: {
 // Utility functions
 // -----------------------------------------------------------------------------
 
-function cleanOutput(output)
-{
+function cleanOutput(output) {
 	// Remove lines that start with `==` and trim extra whitespace
 	return output
 		.split("\n")
@@ -81,6 +81,7 @@ function cleanOutput(output)
 		.join("\n")
 		.trim();
 }
+
 
 // -----------------------------------------------------------------------------
 // On page load
@@ -144,13 +145,11 @@ onMount(async () => {
 				<Parameter label="Mismatch" type="text" help="?" bind:value={Options.mismatch} />
 				<Parameter label="Gap Open" type="text" help="?" bind:value={Options.gapopen} />
 				<Parameter label="Gap Extend" type="text" help="?" bind:value={Options.gapextend} />
-				<Parameter label="Scoring Matrix" type="dropdown" help="?" bind:value={Options.gapextend} />
+				<Parameter label="Scoring Matrix" type="dropdown" options={[null, "PAM30", "PAM70", "BLOSUM80", "BLOSUM62"]} help="?" bind:value={Options.scoring} />
 				<br />
 
 				<h6>General</h6>
 				<Parameter label="Case Sensitive" type="checkbox" help="Enable case-sensitive alignment" bind:value={Options.case_sensitive} />
-
-				<br />
 			</div>
 
 			<!-- Smith-Waterman alignment output -->
