@@ -140,16 +140,17 @@ onMount(async () => {
 			<!-- CLI Parameters -->
 			<div class="col-md-4">
 				<h4 class="mb-3">Parameters</h4>
-				<h6>Scores</h6>
-				<Parameter label="Match" type="text" help="?" bind:value={Options.match} />
-				<Parameter label="Mismatch" type="text" help="?" bind:value={Options.mismatch} />
-				<Parameter label="Gap Open" type="text" help="?" bind:value={Options.gapopen} />
-				<Parameter label="Gap Extend" type="text" help="?" bind:value={Options.gapextend} />
-				<Parameter label="Scoring Matrix" type="dropdown" options={[null, "PAM30", "PAM70", "BLOSUM80", "BLOSUM62"]} help="?" bind:value={Options.scoring} />
-				<br />
 
 				<h6>General</h6>
 				<Parameter label="Case Sensitive" type="checkbox" help="Enable case-sensitive alignment" bind:value={Options.case_sensitive} />
+				<br />
+
+				<h6>Scores <small><a href="https://en.wikipedia.org/wiki/Gap_penalty" target="_blank">(learn more)</a></small></h6>
+				<Parameter label="Match" type="text" help="Score given to matching bases" bind:value={Options.match} />
+				<Parameter label="Mismatch" type="text" help="Penalty for mismatches" bind:value={Options.mismatch} />
+				<Parameter label="Gap Open" type="text" help="Penalty for starting a gap" bind:value={Options.gapopen} />
+				<Parameter label="Gap Extend" type="text" help="Penalty for each base that extends an open gap. If Gap Extend == Gap Open, this is referred to as a <strong>Linear Gap Penalty</strong>, otherwise it's called an <strong>Affine Gap Penalty</strong>." bind:value={Options.gapextend} />
+				<Parameter label="Scoring Matrix" type="dropdown" options={[null, "PAM30", "PAM70", "BLOSUM80", "BLOSUM62"]} help="Commonly used substitution matrices for protein sequences" bind:value={Options.scoring} />
 			</div>
 
 			<!-- Smith-Waterman alignment output -->
