@@ -64,6 +64,122 @@ onMount(async () => {
 	jQuery("[data-toggle='popover']").popover();
 });
 
+
+// -----------------------------------------------------------------------------
+// Launch alignments
+// -----------------------------------------------------------------------------
+
+function launch()
+{
+	CLI.ready = false;
+
+	// Run Smith-Waterman algorithm
+	let sw = CLI.sw
+		.exec(`--printmatrices ${Params} ${Seq1} ${Seq2}`)
+		.then(d => parseOutput(d, "sw"));
+
+	// Run Needleman-Wunsch algorithm
+	let nw = CLI.nw
+		.exec(`--printmatrices --printscores ${Params} ${Seq1} ${Seq2}`)
+		.then(d => parseOutput(d, "nw"));
+
+	// Re-enable UI parameters once everything is done loading
+	Promise.all([ sw, nw ]).then(() => CLI.ready = true);
+}
+
+
+// -----------------------------------------------------------------------------
+// Utility functions
+// -----------------------------------------------------------------------------
+
+// Convert sequence to list of subscripted bases
+// e.g. "ACATC" --> "A1, C1, A2, T1, C2"
+function seqToArray(seq)
+{
+	let n = 1;
+	let w = seq.split("").map(d => `${d}<sub>${n++}</sub>`);
+	return [""].concat(w);
+}
+
+// Parse results and dynamic programming matrices from output
+function parseOutput(out, algorithm)
+{
+	// Stop if errors
+	if(out.stderr != "") {
+		Result[algorithm] = d.stderr;
+		return;		
+	}
+
+	// Extract DP matrices from stdout
+	let result = "";    // seq-align output displayed to user (excluding matrices)
+	let which = null;   // which matrix we're extracting
+	let matrices = { all: [] };
+	let stdout = out.stdout.split("\n");
+	for(let line of stdout)
+	{
+		// Matrices in the output are prepended with their description
+		if(line == "match_scores:") {
+			which = "match";
+		} else if(line == "gap_a_scores:") {
+			which = "gap_a";
+		} else if(line == "gap_b_scores:") {
+			which = "gap_b";
+		} else if(line.startsWith("match: ")) {
+			which = null;
+		// If we're at a line from a matrix, split the output into an array
+		} else if(which != null) {
+			if(!(which in matrices))
+				matrices[which] = [];
+			let values = line.split(":").pop().trim().split(/\s+/).map(d => +d);
+			matrices[which].push(values);
+		// Keep track of the non-DP output
+		} else if(!line.startsWith("==")) {
+			result += `${line}\n`;
+		}
+	}
+	Result[algorithm] = result;
+
+	// Generate Plotly annotations for matrix
+	let annotations = [];
+	for(let rowNb in matrices.match)
+	{
+		matrices.all[rowNb] = [];
+		for(let colNb in matrices.match[rowNb])
+		{
+			matrices.all[rowNb][colNb] = Math.max(
+				matrices.match[rowNb][colNb],
+				matrices.gap_a[rowNb][colNb],
+				matrices.gap_b[rowNb][colNb],
+			);
+			annotations.push({
+				x: colNb,
+				y: rowNb,
+				text: matrices.all[rowNb][colNb],
+				showarrow: false
+			})
+		}
+	}
+
+	// Create or update plot
+	Plotly.react(`matrix-${algorithm}`, [{
+		x: seqToArray(Seq1),
+		y: seqToArray(Seq2),
+		z: matrices.all,
+		type: "heatmap",
+		showscale: false,
+		hoverinfo: "skip",
+		hovertemplate: '%{x}, %{y}<extra> %{z}</extra>',
+	}], {
+		margin: { t: 30, l: 40, r: 40, b: 40 },
+		annotations: annotations,
+		xaxis: { side: "top" },
+		yaxis: { autorange: "reversed" },
+	}, {
+		displayModeBar: false
+	});
+}
+
+
 // -----------------------------------------------------------------------------
 // HTML
 // -----------------------------------------------------------------------------
