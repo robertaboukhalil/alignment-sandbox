@@ -133,7 +133,7 @@ function parseOutput(out, algorithm)
 			let values = line.split(":").pop().trim().split(/\s+/).map(d => +d);
 			matrices[which].push(values);
 		// Keep track of the non-DP output
-		} else if(!line.startsWith("==")) {
+		} else if(line.trim() != "" && !line.startsWith("==") && !line.startsWith("seq_a:") && !line.startsWith("seq_b:")) {
 			result += `${line}\n`;
 		}
 	}
@@ -170,7 +170,7 @@ function parseOutput(out, algorithm)
 		hoverinfo: "skip",
 		hovertemplate: '%{x}, %{y}<extra> %{z}</extra>',
 	}], {
-		margin: { t: 30, l: 40, r: 40, b: 40 },
+		margin: { t: 30, l: 30, r: 20, b: 5 },
 		annotations: annotations,
 		xaxis: { side: "top" },
 		yaxis: { autorange: "reversed" },
@@ -184,12 +184,6 @@ function parseOutput(out, algorithm)
 // HTML
 // -----------------------------------------------------------------------------
 </script>
-
-<style>
-.sequences {
-	font-family: monospace !important;
-}
-</style>
 
 <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
 	<a class="navbar-brand" href="/">Alignment Sandbox</a>
@@ -220,19 +214,19 @@ function parseOutput(out, algorithm)
 			</div>
 			<div class="row">
 				<div class="col-6 border-right">
-					<input type="text" bind:value={Seq1} disabled={!CLI.ready} class="sequences form-control mb-1" style="font-family: monospace">
-					<input type="text" bind:value={Seq2} disabled={!CLI.ready} class="sequences form-control" style="font-family: monospace">
+					<Parameter col="0" disabled={!CLI.ready} on:launch={launch} bind:value={Seq1} />
+					<Parameter col="0" disabled={!CLI.ready} on:launch={launch} bind:value={Seq2} />
 				</div>
 				<div class="col-2 border-right">
-					<Parameter label="Match" type="text" disabled={!CLI.ready} help="Score given to matching bases" bind:value={Options.match} />
-					<Parameter label="Mismatch" type="text" disabled={!CLI.ready} help="Penalty for mismatches" bind:value={Options.mismatch} />
+					<Parameter label="Match" disabled={!CLI.ready} on:launch={launch}  help="Score given to matching bases" bind:value={Options.match} />
+					<Parameter label="Mismatch" disabled={!CLI.ready} on:launch={launch}  help="Penalty for mismatches" bind:value={Options.mismatch} />
 				</div>
 				<div class="col-2 border-right">
-					<Parameter col="6" label="Open" type="text" disabled={!CLI.ready} help="Penalty for starting a gap. Set to 0 to disable affine gap penalties." bind:value={Options.gapopen} />
-					<Parameter col="6" label="Extend" type="text" disabled={!CLI.ready} help="Penalty for each base that extends an open gap." bind:value={Options.gapextend} />
+					<Parameter label="Open" disabled={!CLI.ready} on:launch={launch}  help="Penalty for starting a gap. Set to 0 to disable affine gap penalties." bind:value={Options.gapopen} />
+					<Parameter label="Extend" disabled={!CLI.ready} on:launch={launch}  help="Penalty for each base that extends an open gap." bind:value={Options.gapextend} />
 				</div>
 				<div class="col-2">
-					<button on:click={launch} style="width:100%" disabled={!CLI.ready} class="btn btn-primary btn-lg pt-4 pb-4">Align</button>
+					<button on:click={launch} style="width:100%" disabled={!CLI.ready} on:launch={launch}  class="btn btn-primary btn-lg pt-4 pb-4">Align</button>
 				</div>
 			</div>
 		</div>
@@ -243,8 +237,8 @@ function parseOutput(out, algorithm)
 			<!-- Smith-Waterman alignment output -->
 			<div class="col-6">
 				<h4 class="mb-3">Smith-Waterman</h4>
-				<pre style="height: 30vh; border: 1px solid #ccc">
-				{Result.sw}
+				<pre style="height: 10vh; border: 1px solid #ccc">
+					{Result.sw}
 				</pre>
 				<div id="matrix-sw"></div>
 			</div>
@@ -252,8 +246,8 @@ function parseOutput(out, algorithm)
 			<!-- Needleman-Wunsch alignment output -->
 			<div class="col-6">
 				<h4 class="mb-3">Needleman-Wunsch</h4>
-				<pre style="height: 30vh; border: 1px solid #ccc">
-				{Result.nw}
+				<pre style="height: 10vh; border: 1px solid #ccc">
+					{Result.nw}
 				</pre>
 				<div id="matrix-nw"></div>
 			</div>
