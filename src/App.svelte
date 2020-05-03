@@ -19,8 +19,7 @@ let Options = {
 	gapopen: -1,
 	gapextend: -1,
 	// General
-	case_sensitive: false,
-	scoring: null
+	case_sensitive: false
 };
 // Aioli/WebAssembly setup
 let CLI = {
@@ -49,38 +48,8 @@ $: Params = Object.keys(Options).map(arg => {
 	return `--${arg} ${value}`;
 }).filter(d => d != "").join(" ").trim();
 
-// Run alignment when user input changes
-$: {
-	if(CLI.ready)
-	{
-		// --printmatrices
-		CLI.sw.exec(`${Params} ${Seq1} ${Seq2}`).then(d =>
-		{
-			Result.sw = cleanOutput(d.stdout);
-			if(d.stderr != "")
-				Result.sw = d.stderr;
-		});
-
-		CLI.nw.exec(`--printscores ${Params} ${Seq1} ${Seq2}`).then(d => {
-			Result.nw = cleanOutput(d.stdout);
-			if(d.stderr != "")
-				Result.nw = d.stderr;
-		});
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Utility functions
-// -----------------------------------------------------------------------------
-
-function cleanOutput(output) {
-	// Remove lines that start with `==` and trim extra whitespace
-	return output
-		.split("\n")
-		.filter(d => !d.startsWith("=="))
-		.join("\n")
-		.trim();
-}
+// Debugging
+$: console.log(`Parameters: ${Params}`);
 
 
 // -----------------------------------------------------------------------------
@@ -89,10 +58,7 @@ function cleanOutput(output) {
 
 onMount(async () => {
 	// Initialize wasm tools
-	Promise.all([
-		CLI.sw.init(),
-		CLI.nw.init()
-	]).then(() => CLI.ready = true);
+	Promise.all([ CLI.sw.init(), CLI.nw.init() ]).then(launch);
 
 	// Enable jQuery tooltips
 	jQuery("[data-toggle='popover']").popover();
@@ -122,14 +88,35 @@ onMount(async () => {
 </nav>
 
 <main role="main">
-	<div class="jumbotron mt-2 mb-3 pb-4">
+	<div class="jumbotron mt-2 mb-3 pb-3">
 		<div class="container">
-			<!-- Input sequences -->
-			<p class="mb-2">Sequences to align:</p>
+			<!-- Input Parameters -->
 			<div class="row">
-				<div class="col-12">
+				<div class="col-6 border-right">
+					<p><strong>Sequences to align:</strong></p>
+				</div>
+				<div class="col-2 border-right">
+					<p><strong>Match Scores:</strong></p>
+				</div>
+				<div class="col-2 border-right">
+					<p><strong>Gap Penalties:</strong></p>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-6 border-right">
 					<input type="text" bind:value={Seq1} disabled={!CLI.ready} class="sequences form-control mb-1" style="font-family: monospace">
 					<input type="text" bind:value={Seq2} disabled={!CLI.ready} class="sequences form-control" style="font-family: monospace">
+				</div>
+				<div class="col-2 border-right">
+					<Parameter label="Match" type="text" disabled={!CLI.ready} help="Score given to matching bases" bind:value={Options.match} />
+					<Parameter label="Mismatch" type="text" disabled={!CLI.ready} help="Penalty for mismatches" bind:value={Options.mismatch} />
+				</div>
+				<div class="col-2 border-right">
+					<Parameter col="6" label="Open" type="text" disabled={!CLI.ready} help="Penalty for starting a gap. Set to 0 to disable affine gap penalties." bind:value={Options.gapopen} />
+					<Parameter col="6" label="Extend" type="text" disabled={!CLI.ready} help="Penalty for each base that extends an open gap." bind:value={Options.gapextend} />
+				</div>
+				<div class="col-2">
+					<button on:click={launch} style="width:100%" disabled={!CLI.ready} class="btn btn-primary btn-lg pt-4 pb-4">Align</button>
 				</div>
 			</div>
 		</div>
@@ -137,36 +124,22 @@ onMount(async () => {
 
 	<div class="container">
 		<div class="row">
-			<!-- CLI Parameters -->
-			<div class="col-md-4">
-				<h4 class="mb-3">Parameters</h4>
-
-				<h6>General</h6>
-				<Parameter label="Case Sensitive" type="checkbox" help="Enable case-sensitive alignment" bind:value={Options.case_sensitive} />
-				<br />
-
-				<h6>Scores <small><a href="https://en.wikipedia.org/wiki/Gap_penalty" target="_blank">(learn more)</a></small></h6>
-				<Parameter label="Match" type="text" help="Score given to matching bases" bind:value={Options.match} />
-				<Parameter label="Mismatch" type="text" help="Penalty for mismatches" bind:value={Options.mismatch} />
-				<Parameter label="Gap Open" type="text" help="Penalty for starting a gap" bind:value={Options.gapopen} />
-				<Parameter label="Gap Extend" type="text" help="Penalty for each base that extends an open gap. If Gap Extend == Gap Open, this is referred to as a <strong>Linear Gap Penalty</strong>, otherwise it's called an <strong>Affine Gap Penalty</strong>." bind:value={Options.gapextend} />
-				<Parameter label="Scoring Matrix" type="dropdown" options={[null, "PAM30", "PAM70", "BLOSUM80", "BLOSUM62"]} help="Commonly used substitution matrices for protein sequences" bind:value={Options.scoring} />
-			</div>
-
 			<!-- Smith-Waterman alignment output -->
-			<div class="col-md-4">
+			<div class="col-6">
 				<h4 class="mb-3">Smith-Waterman</h4>
-				<pre>
+				<pre style="height: 30vh; border: 1px solid #ccc">
 				{Result.sw}
 				</pre>
+				<div id="matrix-sw"></div>
 			</div>
 
 			<!-- Needleman-Wunsch alignment output -->
-			<div class="col-md-4">
+			<div class="col-6">
 				<h4 class="mb-3">Needleman-Wunsch</h4>
-				<pre>
+				<pre style="height: 30vh; border: 1px solid #ccc">
 				{Result.nw}
 				</pre>
+				<div id="matrix-nw"></div>
 			</div>
 		</div>
 	</div>

@@ -8,30 +8,19 @@ export let options = [];
 export let disabled = false;
 export let placeholder = "";
 export let help = "";
+export let col = 6;
 
 $: id = `param-${type}-${label}`;
 </script>
 
 
-<div class="form-group row mb-0">
-    <label class="col-sm-6 col-form-label" for={id}>{label}</label>
+<div class="form-group row mb-2">
+    <label class="col-{col} col-form-label" for={id}>{label}</label>
 
-    <div class="col-sm-4 p-0">
+    <div class="col-3 p-0">
         {#if type == "text"}
             <div class="input-group input-group-sm">
-                {#if prepend != ""}
-                <div class="input-group-prepend">
-                    <div class="input-group-text">{prepend}</div>
-                </div>
-                {/if}
-
                 <input id={id} type="text" class="form-control form-control-sm" bind:value={value} placeholder={placeholder} disabled={disabled}>
-
-                {#if append != ""}
-                <div class="input-group-append">
-                    <div class="input-group-text">{append}</div>
-                </div>
-                {/if}
             </div>
 
         {:else if type == "checkbox"}
@@ -43,13 +32,13 @@ $: id = `param-${type}-${label}`;
         {:else if type == "dropdown"}
             <select class="custom-select custom-select-sm" bind:value={value}>
                 {#each options as option}
-                    <option value="{option}">{option == null ? "None" : option}</option>
+                    <option value="{option}">{option == null ? "—" : option}</option>
                 {/each}
             </select>
         {/if}
     </div>
 
-    <div class="col-sm-1 p-0 pl-3">
+    <div class="col-1 p-0 pl-1">
         {#if help != ""}
         <button
             type="button"
