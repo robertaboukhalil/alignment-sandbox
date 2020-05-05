@@ -2,6 +2,7 @@
 import { onMount } from "svelte";
 import { Aioli } from "@biowasm/aioli";
 import Parameter from "./Parameter.svelte";
+import Heatmap from "./Heatmap.svelte";
 
 
 // -----------------------------------------------------------------------------
@@ -32,6 +33,14 @@ let Result = {
 	sw: "Loading...",
 	nw: "Loading..."
 };
+let Matrix = {
+	sw: [],
+	nw: []
+};
+let Pointers = {
+	sw: [],
+	nw: []
+}
 
 
 // -----------------------------------------------------------------------------
@@ -92,15 +101,6 @@ function launch()
 // Utility functions
 // -----------------------------------------------------------------------------
 
-// Convert sequence to list of subscripted bases
-// e.g. "ACATC" --> "A1, C1, A2, T1, C2"
-function seqToArray(seq)
-{
-	let n = 1;
-	let w = seq.split("").map(d => `${d}<sub>${n++}</sub>`);
-	return [""].concat(w);
-}
-
 // Parse results and dynamic programming matrices from output
 function parseOutput(out, algorithm)
 {
@@ -113,7 +113,9 @@ function parseOutput(out, algorithm)
 	// Extract DP matrices from stdout
 	let result = "";    // seq-align output displayed to user (excluding matrices)
 	let which = null;   // which matrix we're extracting
-	let matrices = { all: [] };
+	let matrices = {};  // all three matrices
+	let matrix = [];    // the matrix we get by combining info from all three matrices
+	let pointers = [];  // matrix to help us backtrack
 	let stdout = out.stdout.split("\n");
 	for(let line of stdout)
 	{
@@ -139,44 +141,28 @@ function parseOutput(out, algorithm)
 	}
 	Result[algorithm] = result;
 
-	// Generate Plotly annotations for matrix
-	let annotations = [];
-	for(let rowNb in matrices.match)
-	{
-		matrices.all[rowNb] = [];
+	// Generate a single DP matrix from the three matrices
+	for(let rowNb in matrices.match) {
+		matrix[rowNb] = [];
+		pointers[rowNb] = [];
 		for(let colNb in matrices.match[rowNb])
 		{
-			matrices.all[rowNb][colNb] = Math.max(
+			// Track max value
+			matrix[rowNb][colNb] = Math.max(
 				matrices.match[rowNb][colNb],
 				matrices.gap_a[rowNb][colNb],
 				matrices.gap_b[rowNb][colNb],
 			);
-			annotations.push({
-				x: colNb,
-				y: rowNb,
-				text: matrices.all[rowNb][colNb],
-				showarrow: false
-			})
+			// But also whether it was a match, insertion or deletion to help us backtrack later
+			pointers[rowNb][colNb] = [ matrices.match[rowNb][colNb],
+				matrices.gap_a[rowNb][colNb],
+				matrices.gap_b[rowNb][colNb]
+			].indexOf(matrix[rowNb][colNb]);
 		}
 	}
 
-	// Create or update plot
-	Plotly.react(`matrix-${algorithm}`, [{
-		x: seqToArray(Seq1),
-		y: seqToArray(Seq2),
-		z: matrices.all,
-		type: "heatmap",
-		showscale: false,
-		hoverinfo: "skip",
-		hovertemplate: '%{x}, %{y}<extra> %{z}</extra>',
-	}], {
-		margin: { t: 30, l: 30, r: 20, b: 5 },
-		annotations: annotations,
-		xaxis: { side: "top" },
-		yaxis: { autorange: "reversed" },
-	}, {
-		displayModeBar: false
-	});
+	Matrix[algorithm] = matrix;
+	Pointers[algorithm] = pointers;
 }
 
 
@@ -240,7 +226,7 @@ function parseOutput(out, algorithm)
 				<pre style="height: 10vh; border: 1px solid #ccc">
 					{Result.sw}
 				</pre>
-				<div id="matrix-sw"></div>
+				<Heatmap algorithm="sw" seq1={Seq1} seq2={Seq2} matrix={Matrix.sw} pointers={Pointers.sw} />
 			</div>
 
 			<!-- Needleman-Wunsch alignment output -->
@@ -249,7 +235,7 @@ function parseOutput(out, algorithm)
 				<pre style="height: 10vh; border: 1px solid #ccc">
 					{Result.nw}
 				</pre>
-				<div id="matrix-nw"></div>
+				<Heatmap algorithm="nw" seq1={Seq1} seq2={Seq2} matrix={Matrix.nw} pointers={Pointers.nw} />
 			</div>
 		</div>
 	</div>
