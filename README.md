@@ -1,4 +1,4 @@
-# alignment-sandbox
+# Alignment Sandbox
 
 An interactive web tool for exploring the sequence alignment algorithms Smith-Waterman and Needleman-Wunsch, powered by WebAssembly.
 
