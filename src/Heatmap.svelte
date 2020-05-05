@@ -145,4 +145,4 @@ function plot()
 }
 </script>
 
-<div id="heatmap-{algorithm}"></div>
+<div style="max-height:50vh" id="heatmap-{algorithm}"></div>
