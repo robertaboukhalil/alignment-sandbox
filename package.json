@@ -1,6 +1,13 @@
 {
-  "name": "svelte-app",
+  "name": "Alignment Sandbox",
   "version": "1.0.0",
+  "description": "An interactive tool for exploring sequence alignment algorithms",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/robertaboukhalil/alignment-sandbox"
+  },
+  "author": "Robert Aboukhalil",
+  "license": "MIT",
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
