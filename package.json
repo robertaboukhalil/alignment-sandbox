@@ -1,5 +1,5 @@
 {
-  "name": "Alignment Sandbox",
+  "name": "alignment-sandbox",
   "version": "1.0.0",
   "description": "An interactive tool for exploring sequence alignment algorithms",
   "repository": {
