@@ -184,7 +184,7 @@ pre {
 		<ul class="navbar-nav mr-auto"></ul>
 		<ul class="navbar-nav">
 			<li class="nav-item active">
-				<a class="nav-link" href="/">Code</a>
+				<a class="nav-link" href="https://github.com/robertaboukhalil/alignment-sandbox">Code</a>
 			</li>
 		</ul>
 	</div>
