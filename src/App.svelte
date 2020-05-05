@@ -10,17 +10,14 @@ import Heatmap from "./Heatmap.svelte";
 // -----------------------------------------------------------------------------
 
 // User input
-let Seq1 = "ACGTGCCCCACAGAT";
-let Seq2 = "AGGTGGACGAGAT";
+let Seq1 = "GGTTGACTA";
+let Seq2 = "TGTTCGG";
 let Params = [];
 let Options = {
-	// Scoring
-	match: 2,
-	mismatch: -2,
-	gapopen: -1,
-	gapextend: -1,
-	// General
-	case_sensitive: false
+	match: 3,
+	mismatch: -3,
+	gapopen: 0,
+	gapextend: -2,
 };
 // Aioli/WebAssembly setup
 let CLI = {
