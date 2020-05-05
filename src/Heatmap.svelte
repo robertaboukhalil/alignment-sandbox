@@ -65,15 +65,15 @@ function getBacktrack()
     // Do the backtrack
     // -------------------------------------------------------------------------
     let backtrack = [];
-    while(
-        // Global alignment => stop when get to (0, 0)
-        algorithm == "nw" && rowNb != 0 && colNb != 0 ||
-        // Local  => stop when get to 0
-        algorithm == "sw" && matrix[rowNb][colNb] != 0
-    )
+    // For global alignment, we backtrack until we get to (0, 0)
+    while(rowNb >= 0 && colNb >= 0)
     {
         // Save coordinates as a linear array to simplify comparisons later on
         backtrack.push(matrix[0].length * rowNb + colNb);
+
+        // For local alignment, we stop backtracking when we reach a value of 0
+        if(algorithm == "sw" && matrix[rowNb][colNb] == 0)
+            break;
 
         // Where to go next?
         //       || j - 1 |  j

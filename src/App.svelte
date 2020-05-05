@@ -171,6 +171,13 @@ function parseOutput(out, algorithm)
 // -----------------------------------------------------------------------------
 </script>
 
+<style>
+pre {
+	height: 10vh;
+	border: 1px solid #ccc;
+}
+</style>
+
 <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
 	<a class="navbar-brand" href="/">Alignment Sandbox</a>
 	<div class="collapse navbar-collapse" id="navbarsExampleDefault">
@@ -223,18 +230,14 @@ function parseOutput(out, algorithm)
 			<!-- Smith-Waterman alignment output -->
 			<div class="col-6">
 				<h4 class="mb-3">Smith-Waterman</h4>
-				<pre style="height: 10vh; border: 1px solid #ccc">
-					{Result.sw}
-				</pre>
+				<pre>{Result.sw}</pre>
 				<Heatmap algorithm="sw" seq1={Seq1} seq2={Seq2} matrix={Matrix.sw} pointers={Pointers.sw} />
 			</div>
 
 			<!-- Needleman-Wunsch alignment output -->
 			<div class="col-6">
 				<h4 class="mb-3">Needleman-Wunsch</h4>
-				<pre style="height: 10vh; border: 1px solid #ccc">
-					{Result.nw}
-				</pre>
+				<pre>{Result.nw}</pre>
 				<Heatmap algorithm="nw" seq1={Seq1} seq2={Seq2} matrix={Matrix.nw} pointers={Pointers.nw} />
 			</div>
 		</div>
