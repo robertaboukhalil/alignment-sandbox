@@ -173,6 +173,12 @@ pre {
 	height: 10vh;
 	border: 1px solid #ccc;
 }
+
+@media screen and (max-width: 800px) {
+	pre {
+		height: 100px;
+	}
+}
 </style>
 
 <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
@@ -188,34 +194,27 @@ pre {
 </nav>
 
 <main role="main">
-	<div class="jumbotron mt-2 mb-3 pb-3">
+	<div class="jumbotron mb-3 pb-2">
 		<div class="container">
 			<!-- Input Parameters -->
-			<div class="row">
-				<div class="col-6 border-right">
+			<div class="row mt-4 mt-sm-0">
+				<div class="col-12 col-sm-6 mt-2 mt-sm-0 border-right">
 					<p><strong>Sequences to align:</strong></p>
-				</div>
-				<div class="col-2 border-right">
-					<p><strong>Match Scores:</strong></p>
-				</div>
-				<div class="col-2 border-right">
-					<p><strong>Gap Penalties:</strong></p>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-6 border-right">
 					<Parameter col="0" disabled={!CLI.ready} on:launch={launch} bind:value={Seq1} />
 					<Parameter col="0" disabled={!CLI.ready} on:launch={launch} bind:value={Seq2} />
 				</div>
-				<div class="col-2 border-right">
+				<div class="col-12 col-sm-6 col-md-2 mt-2 mt-sm-0 border-right">
+					<p><strong>Match Scores:</strong></p>
 					<Parameter label="Match" disabled={!CLI.ready} on:launch={launch}  help="Score given to matching bases" bind:value={Options.match} />
 					<Parameter label="Mismatch" disabled={!CLI.ready} on:launch={launch}  help="Penalty for mismatches" bind:value={Options.mismatch} />
 				</div>
-				<div class="col-2 border-right">
+				<div class="col-12 col-sm-6 col-md-2 mt-2 mt-sm-0 border-right">
+					<p><strong>Gap Penalties:</strong></p>
 					<Parameter label="Open" disabled={!CLI.ready} on:launch={launch}  help="Penalty for starting a gap. Set to 0 to disable affine gap penalties." bind:value={Options.gapopen} />
 					<Parameter label="Extend" disabled={!CLI.ready} on:launch={launch}  help="Penalty for each base that extends an open gap." bind:value={Options.gapextend} />
 				</div>
-				<div class="col-2">
+				<div class="col-12 col-sm-6 col-md-2 mt-2 mt-sm-0 mb-2 mb-sm-0">
+					<p class="d-none d-sm-block">&nbsp;</p>
 					<button on:click={launch} style="width:100%" disabled={!CLI.ready} on:launch={launch}  class="btn btn-primary btn-lg pt-4 pb-4">Align</button>
 				</div>
 			</div>
@@ -225,14 +224,14 @@ pre {
 	<div class="container">
 		<div class="row">
 			<!-- Smith-Waterman alignment output -->
-			<div class="col-6">
+			<div class="col-md-6 mb-2">
 				<h4 class="mb-3">Smith-Waterman</h4>
 				<pre>{Result.sw}</pre>
 				<Heatmap algorithm="sw" seq1={Seq1} seq2={Seq2} matrix={Matrix.sw} pointers={Pointers.sw} />
 			</div>
 
 			<!-- Needleman-Wunsch alignment output -->
-			<div class="col-6">
+			<div class="col-md-6 mb-2">
 				<h4 class="mb-3">Needleman-Wunsch</h4>
 				<pre>{Result.nw}</pre>
 				<Heatmap algorithm="nw" seq1={Seq1} seq2={Seq2} matrix={Matrix.nw} pointers={Pointers.nw} />
