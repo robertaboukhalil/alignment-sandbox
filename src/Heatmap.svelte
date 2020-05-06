@@ -145,4 +145,16 @@ function plot()
 }
 </script>
 
-<div style="max-height:50vh" id="heatmap-{algorithm}"></div>
+<style>
+.heatmap {
+	max-height: 50vh;
+}
+
+@media screen and (max-height: 500px) {
+    .heatmap {
+        max-height: 400px;
+    }
+}
+</style>
+
+<div class="heatmap" id="heatmap-{algorithm}"></div>
