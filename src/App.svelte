@@ -183,7 +183,7 @@ pre {
 
 <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
 	<a class="navbar-brand" href="/">Alignment Sandbox</a>
-	<div class="collapse navbar-collapse" id="navbarsExampleDefault">
+	<div class="collapse navbar-collapse">
 		<ul class="navbar-nav mr-auto"></ul>
 		<ul class="navbar-nav">
 			<li class="nav-item active">
