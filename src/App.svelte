@@ -1,6 +1,6 @@
 <script>
 import { onMount } from "svelte";
-import { Aioli } from "@biowasm/aioli";
+import Aioli from "@biowasm/aioli";
 import Parameter from "./Parameter.svelte";
 import Heatmap from "./Heatmap.svelte";
 
@@ -20,11 +20,8 @@ let Options = {
 	gapextend: -2,
 };
 // Aioli/WebAssembly setup
-let CLI = {
-	ready: false,
-	sw: new Aioli("seq-align/smith_waterman/2017.10.18"),
-	nw: new Aioli("seq-align/needleman_wunsch/2017.10.18")
-}
+let ready = false;
+let CLI;
 // Output
 let Result = {
 	sw: "Loading...",
@@ -64,7 +61,11 @@ $: console.log(`Parameters: ${Params}`);
 
 onMount(async () => {
 	// Initialize wasm tools
-	Promise.all([ CLI.sw.init(), CLI.nw.init() ]).then(launch);
+	CLI = await new Aioli([
+		"seq-align/smith_waterman/2017.10.18",
+		"seq-align/needleman_wunsch/2017.10.18"
+	], { printInterleaved: false })
+	launch();
 
 	// Enable jQuery tooltips
 	jQuery("[data-toggle='popover']").popover();
@@ -75,22 +76,22 @@ onMount(async () => {
 // Launch alignments
 // -----------------------------------------------------------------------------
 
-function launch()
+async function launch()
 {
-	CLI.ready = false;
+	ready = false;
 
 	// Run Smith-Waterman algorithm
-	let sw = CLI.sw
-		.exec(`--printmatrices ${Params} ${Seq1} ${Seq2}`)
+	await CLI
+		.exec(`smith_waterman --printmatrices ${Params} ${Seq1} ${Seq2}`)
 		.then(d => parseOutput(d, "sw"));
 
 	// Run Needleman-Wunsch algorithm
-	let nw = CLI.nw
-		.exec(`--printmatrices --printscores ${Params} ${Seq1} ${Seq2}`)
+	await CLI
+		.exec(`needleman_wunsch --printmatrices --printscores ${Params} ${Seq1} ${Seq2}`)
 		.then(d => parseOutput(d, "nw"));
 
 	// Re-enable UI parameters once everything is done loading
-	Promise.all([ sw, nw ]).then(() => CLI.ready = true);
+	ready = true;
 }
 
 
@@ -200,22 +201,22 @@ pre {
 			<div class="row mt-4 mt-sm-0">
 				<div class="col-12 col-sm-6 mt-2 mt-sm-0 border-right">
 					<p><strong>Sequences to align:</strong></p>
-					<Parameter col="0" disabled={!CLI.ready} on:launch={launch} bind:value={Seq1} />
-					<Parameter col="0" disabled={!CLI.ready} on:launch={launch} bind:value={Seq2} />
+					<Parameter col="0" disabled={!ready} on:launch={launch} bind:value={Seq1} />
+					<Parameter col="0" disabled={!ready} on:launch={launch} bind:value={Seq2} />
 				</div>
 				<div class="col-12 col-sm-6 col-md-2 mt-2 mt-sm-0 border-right">
 					<p><strong>Match Scores:</strong></p>
-					<Parameter label="Match" disabled={!CLI.ready} on:launch={launch}  help="Score given to matching bases" bind:value={Options.match} />
-					<Parameter label="Mismatch" disabled={!CLI.ready} on:launch={launch}  help="Penalty for mismatches" bind:value={Options.mismatch} />
+					<Parameter label="Match" disabled={!ready} on:launch={launch}  help="Score given to matching bases" bind:value={Options.match} />
+					<Parameter label="Mismatch" disabled={!ready} on:launch={launch}  help="Penalty for mismatches" bind:value={Options.mismatch} />
 				</div>
 				<div class="col-12 col-sm-6 col-md-2 mt-2 mt-sm-0 border-right">
 					<p><strong>Gap Penalties:</strong></p>
-					<Parameter label="Open" disabled={!CLI.ready} on:launch={launch}  help="Penalty for starting a gap. Set to 0 to disable affine gap penalties." bind:value={Options.gapopen} />
-					<Parameter label="Extend" disabled={!CLI.ready} on:launch={launch}  help="Penalty for each base that extends an open gap." bind:value={Options.gapextend} />
+					<Parameter label="Open" disabled={!ready} on:launch={launch}  help="Penalty for starting a gap. Set to 0 to disable affine gap penalties." bind:value={Options.gapopen} />
+					<Parameter label="Extend" disabled={!ready} on:launch={launch}  help="Penalty for each base that extends an open gap." bind:value={Options.gapextend} />
 				</div>
 				<div class="col-12 col-sm-6 col-md-2 mt-2 mt-sm-0 mb-2 mb-sm-0">
 					<p class="d-none d-sm-block">&nbsp;</p>
-					<button on:click={launch} style="width:100%" disabled={!CLI.ready} on:launch={launch}  class="btn btn-primary btn-lg pt-4 pb-4">Align</button>
+					<button on:click={launch} style="width:100%" disabled={!ready} on:launch={launch}  class="btn btn-primary btn-lg pt-4 pb-4">Align</button>
 				</div>
 			</div>
 		</div>
