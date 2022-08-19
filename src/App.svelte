@@ -194,7 +194,7 @@ pre {
 	</div>
 </nav>
 
-<main role="main">
+<main>
 	<div class="jumbotron mb-3 pb-2">
 		<div class="container">
 			<!-- Input Parameters -->
