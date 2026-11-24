@@ -6,6 +6,7 @@ export let seq1 = "";
 export let seq2 = "";
 export let matrix = [];
 export let pointers = [];
+export let options = {};
 
 
 // =============================================================================
@@ -65,6 +66,9 @@ function getBacktrack()
     // Do the backtrack
     // -------------------------------------------------------------------------
     let backtrack = [];
+    // Start as if we got here by a match, so that we begin in the best of the 3 matrices
+    let whichDirection = 0;
+    let score = matrix[rowNb][colNb];
     // For global alignment, we backtrack until we get to (0, 0)
     while(rowNb >= 0 && colNb >= 0)
     {
@@ -75,13 +79,21 @@ function getBacktrack()
         if(algorithm == "sw" && matrix[rowNb][colNb] == 0)
             break;
 
-        // Where to go next?
+        // What we add to this cell's [match, gap_a, gap_b] scores to get the score of the cell we came from
+        let cost = Array(3).fill(+options.gapopen + +options.gapextend);
+        if(whichDirection == 0)
+            cost.fill(score - matrix[rowNb][colNb]);
+        else
+            cost[whichDirection] = +options.gapextend;
+
+        // Where to go next? Like seq-align: gap_a (1) if its score fits, then gap_b (2), otherwise match (0)
         //       || j - 1 |  j
         // ======||=======|=====
         // i - 1 ||   0   |  1
         // ------||-------|-----
         //   i   ||   2   |  *
-        let whichDirection = pointers[rowNb][colNb];
+        whichDirection = [1, 2].find(d => pointers[rowNb][colNb][d] + cost[d] == score) || 0;
+        score = pointers[rowNb][colNb][whichDirection];
         if(whichDirection == 0) {
             rowNb -= 1; colNb -=1;
         } else if(whichDirection == 1) {

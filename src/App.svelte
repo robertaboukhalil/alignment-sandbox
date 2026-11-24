@@ -151,11 +151,11 @@ function parseOutput(out, algorithm)
 				matrices.gap_a[rowNb][colNb],
 				matrices.gap_b[rowNb][colNb],
 			);
-			// But also whether it was a match, insertion or deletion to help us backtrack later
+			// But also keep the match, insertion and deletion scores to help us backtrack later
 			pointers[rowNb][colNb] = [ matrices.match[rowNb][colNb],
 				matrices.gap_a[rowNb][colNb],
 				matrices.gap_b[rowNb][colNb]
-			].indexOf(matrix[rowNb][colNb]);
+			];
 		}
 	}
 
@@ -228,14 +228,14 @@ pre {
 			<div class="col-md-6 mb-2">
 				<h4 class="mb-3">Smith-Waterman</h4>
 				<pre>{Result.sw}</pre>
-				<Heatmap algorithm="sw" seq1={Seq1} seq2={Seq2} matrix={Matrix.sw} pointers={Pointers.sw} />
+				<Heatmap algorithm="sw" seq1={Seq1} seq2={Seq2} matrix={Matrix.sw} pointers={Pointers.sw} options={Options} />
 			</div>
 
 			<!-- Needleman-Wunsch alignment output -->
 			<div class="col-md-6 mb-2">
 				<h4 class="mb-3">Needleman-Wunsch</h4>
 				<pre>{Result.nw}</pre>
-				<Heatmap algorithm="nw" seq1={Seq1} seq2={Seq2} matrix={Matrix.nw} pointers={Pointers.nw} />
+				<Heatmap algorithm="nw" seq1={Seq1} seq2={Seq2} matrix={Matrix.nw} pointers={Pointers.nw} options={Options} />
 			</div>
 		</div>
 	</div>
